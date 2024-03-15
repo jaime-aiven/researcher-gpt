@@ -17,6 +17,7 @@ import requests
 import json
 from langchain.schema import SystemMessage
 from fastapi import FastAPI
+import streamlit as st
 
 load_dotenv()
 brwoserless_api_key = os.getenv("BROWSERLESS_API_KEY")
@@ -148,8 +149,11 @@ system_message = SystemMessage(
             2/ If there are url of relevant links & articles, you will scrape it to gather more information
             3/ After scraping & search, you should think "is there any new things i should search & scraping based on the data I collected to increase research quality?" If answer is yes, continue; But don't do this more than 3 iteratins
             4/ You should not make things up, you should only write facts & data that you have gathered
-            5/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research
-            6/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
+            5/ The objective of this research is to understand the needs and wants of the target person and the company they work for.
+            6/ This information must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
+            7/ The output should contain suggestions on how Aiven's products (aiven.io) could address their needs
+            8/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research
+            9/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
 )
 
 agent_kwargs = {
@@ -172,22 +176,22 @@ agent = initialize_agent(
 
 
 # 4. Use streamlit to create a web app
-# def main():
-#     st.set_page_config(page_title="AI research agent", page_icon=":bird:")
+def main():
+    st.set_page_config(page_title="AI prospecting research agent", page_icon=":money_with_wings:")
 
-#     st.header("AI research agent :bird:")
-#     query = st.text_input("Research goal")
+    st.header("AI prospecting research agent :money_with_wings:")
+    query = st.text_input("Research target")
 
-#     if query:
-#         st.write("Doing research for ", query)
+    if query:
+        st.write("Doing research for ", query)
 
-#         result = agent({"input": query})
+        result = agent({"input": query})
 
-#         st.info(result['output'])
+        st.info(result['output'])
 
 
-# if __name__ == '__main__':
-#     main()
+if __name__ == '__main__':
+    main()
 
 
 # 5. Set this as an API endpoint via FastAPI
