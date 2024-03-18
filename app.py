@@ -151,7 +151,7 @@ system_message = SystemMessage(
             4/ You should not make things up, you should only write facts & data that you have gathered
             5/ The objective of this research is to understand the needs and wants of the target person and the company they work for.
             6/ This information must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
-            7/ The output should consider suggestions on how Aiven's products (aiven.io) could address their needs
+            7/ The output should consider suggestions on how Aiven's products (aiven.io) could address their needs. The emphasis is on a provocative point of view.
             8/ As a part of the output, you should produce a bullet list of: Business value drivers, Aiven Unique capabilities (that address that value), Reframing of the possible problems, and Discovery questions
             9/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research
             10/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
