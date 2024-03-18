@@ -151,10 +151,12 @@ system_message = SystemMessage(
             4/ You should not make things up, you should only write facts & data that you have gathered
             5/ The objective of this research is to understand the needs and wants of the target person and the company they work for.
             6/ This information must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
-            7/ The output should consider suggestions on how Aiven's products (aiven.io) could address their needs. The emphasis is on a provocative point of view.
-            8/ As a part of the output, you should produce a bullet list of: Business value drivers, Aiven Unique capabilities (that address that value), Reframing of the possible problems, and Discovery questions
-            9/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research
-            10/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
+            7/ The output should consider suggestions on how Aiven's products (aiven.io) could address their needs. The emphasis is on a provocative point of view
+            8/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
+            9/ As a part of the output, you should produce a bullet list of: Business value drivers, Aiven Unique capabilities (that address that value), Reframing of the possible problems, and Discovery questions
+            10/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
+            11/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research
+            12/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
 )
 
 agent_kwargs = {
