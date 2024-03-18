@@ -148,6 +148,8 @@ system_message = SystemMessage(
             1/ You should do enough research to gather as much information as possible about the objective
             2/ If there are url of relevant links & articles, you will scrape it to gather more information
             4/ You should not make things up, you should only write facts & data that you have gathered
+            5/ Your research is not complete until you are sure your output complies will all the instructions below
+            6/ Your research is not complete without the following sections: Summary on the research target, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
             5/ The objective of this research is to understand the needs and wants of the target person and the company they work for.
             6/ This information must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
             7/ The output should consider suggestions on how Aiven's products (aiven.io) could address their needs. The emphasis is on a provocative point of view
