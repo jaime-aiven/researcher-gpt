@@ -186,6 +186,7 @@ def main():
 
     st.header(":crab: Aiven AI PPoV prospecting agent :moneybag: :crab:")
     query = st.text_input("""The PPoV research takes about 1 minute to complete and accepts one target at a time.
+                          
                           Enter research target (Full name and company):""")
 
     if query:
