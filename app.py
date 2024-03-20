@@ -149,7 +149,7 @@ system_message = SystemMessage(
             2/ If there are url of relevant links & articles, you will scrape it to gather more information
             4/ You should not make things up, you should only write facts & data that you have gathered
             5/ Your research is not complete until you are sure your output complies will all the instructions below
-            6/ Your research is not complete without the following sections: Summary on the research target, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
+            6/ Your research is not complete without the following sections: Summary on the research target, Summary of existing cloud technology stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
             7/ The objective of this research is to understand the needs and wants of the target person and the company they work for.
             8/ This information must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
             9/ You should research the composition of the cloud data technology stack of the company the research target works for, and match it to the open source products that the Aiven platform provides on all major cloud providers
