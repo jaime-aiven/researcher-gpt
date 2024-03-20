@@ -182,10 +182,10 @@ agent = initialize_agent(
 
 # 4. Use streamlit to create a web app
 def main():
-    st.set_page_config(page_title="AI prospecting research agent", page_icon=":money_with_wings:")
+    st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":money_bag:")
 
-    st.header("PPoV prospecting research agent :money_with_wings:")
-    query = st.text_input("Research target")
+    st.header(":crab: :money_bag: Aiven AI PPoV prospecting agent :money_bag: :crab:")
+    query = st.text_input("Research target (Full name and company)")
 
     if query:
         st.write("Researching ", query)
