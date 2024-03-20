@@ -182,11 +182,11 @@ agent = initialize_agent(
 def main():
     st.set_page_config(page_title="AI prospecting research agent", page_icon=":money_with_wings:")
 
-    st.header("AI prospecting research agent :money_with_wings:")
+    st.header("PPoV prospecting research agent :money_with_wings:")
     query = st.text_input("Research target")
 
     if query:
-        st.write("Doing research for ", query)
+        st.write("Researching ", query)
 
         result = agent({"input": query})
 
