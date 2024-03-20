@@ -146,19 +146,19 @@ system_message = SystemMessage(
             
             Please make sure you complete the objective above with the following rules:
             1/ You should do enough research to gather as much information as possible about the objective
-            2/ If there are url of relevant links & articles, you will scrape it to gather more information
-            4/ You should not make things up, you should only write facts & data that you have gathered
-            5/ Your research is not complete until you are sure your output complies will all the instructions below
-            6/ Your output is not complete without the following sections: Summary on the research target, Summary of existing cloud technology stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
-            7/ The objective of this research is to understand the needs and wants of the target person and the company they work for.
-            8/ This information must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
-            9/ You should research the composition of the cloud data technology stack of the company the research target works for, and match it to the open source products that the Aiven platform provides on all major cloud providers
-            10/ The output should contain suggestions on how Aiven's products (aiven.io) could address their needs; in terms of streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view
-            11/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
-            12/ As a part of the output, you should produce a bullet list of: Business value drivers, Aiven technologies in use, Aiven Unique capabilities (that address that value), Reframing of the possible problems, and Discovery questions
-            13/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
-            14/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
-            15/ In the final output, You should include all reference data & links to back up your research; You should include all reference data & links to back up your research"""
+            2/ If there are urls of relevant links & articles, you will scrape them to gather more information
+            3/ You should not make things up, you should only write facts & data that you have gathered
+            4/ Your research is not complete until you are sure your output complies will all the instructions below
+            5/ Your output must contain the following sections: Summary on the research target, Summary of existing cloud technology stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
+            6/ Your output must contain the following sections: Summary on the research target, Summary of existing cloud technology stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
+            7/ Your output must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
+            8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
+            9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
+            10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
+            11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
+            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
+            13/ In the final output, You should include all reference data & links to back up your research
+            14/Your output must be nicly formatted with headers for each section and bullet points"""
 )
 
 agent_kwargs = {
@@ -168,7 +168,7 @@ agent_kwargs = {
 
 llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 memory = ConversationSummaryBufferMemory(
-    memory_key="memory", return_messages=True, llm=llm, max_token_limit=1000)
+    memory_key="memory", return_messages=True, llm=llm, max_token_limit=1500)
 
 agent = initialize_agent(
     tools,
@@ -184,7 +184,7 @@ agent = initialize_agent(
 def main():
     st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":moneybag:")
 
-    st.header(":crab: :moneybag: Aiven AI PPoV prospecting agent :moneybag: :crab:")
+    st.header(":crab: Aiven AI PPoV prospecting agent :moneybag: :crab:")
     query = st.text_input("Research target (Full name and company)")
 
     if query:
