@@ -185,7 +185,7 @@ def main():
     st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":moneybag:")
 
     st.header(":crab: Aiven AI PPoV prospecting agent :moneybag: :crab:")
-    query = st.text_input("Research target (Full name and company)")
+    query = st.text_input("Research target (Full name and company). /n The research takes about 1 minute to complete and accepts one target at a time")
 
     if query:
         st.write("Researching ", query)
