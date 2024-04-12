@@ -22,6 +22,7 @@ import streamlit as st
 load_dotenv()
 brwoserless_api_key = os.getenv("BROWSERLESS_API_KEY")
 serper_api_key = os.getenv("SERP_API_KEY")
+wintr_api_key = os.getenv("WINTR_API_KEY")
 
 # 1. Tool for search
 
@@ -65,8 +66,12 @@ def scrape_website(objective: str, url: str):
     # Convert Python object to JSON string
     data_json = json.dumps(data)
 
-    # Send the POST request
-    post_url = f"https://chrome.browserless.io/content?token={brwoserless_api_key}"
+    # Send the POST request to Browserless
+    # post_url = f"https://chrome.browserless.io/content?token={brwoserless_api_key}"
+    # response = requests.post(post_url, headers=headers, data=data_json)
+
+    # Send a POST request to Wintr
+    post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
     response = requests.post(post_url, headers=headers, data=data_json)
 
     # Check the response status code
