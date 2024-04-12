@@ -163,7 +163,7 @@ system_message = SystemMessage(
             11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
             12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
             13/ In the final output, You should include all reference data & links to back up your research
-            14/Your output must be nicly formatted with headers for each section and bullet points"""
+            14/ Your output must be nicely formatted with headers for each section and bullet points"""
 )
 
 agent_kwargs = {
@@ -185,21 +185,81 @@ agent = initialize_agent(
 )
 
 
+def process_input(text):
+    # This function extracts the paragraphs as sections.
+    sections = text.split('\n\n')  # Assume the paragraph uses double newlines to separate sections.
+    return {
+        "header1": sections[0] if len(sections) > 0 else "",
+        "research_target": sections[1] if len(sections) > 1 else "",
+        "header2": sections[2] if len(sections) > 2 else "",
+        "cloud_stack": sections[3] if len(sections) > 3 else "",
+        "header3": sections[4] if len(sections) > 4 else "",
+        "value_drivers": sections[5] if len(sections) > 5 else "",
+        "header4": sections[0] if len(sections) > 6 else "",
+        "aiven_capabilities": sections[1] if len(sections) > 7 else "",
+        "header5": sections[2] if len(sections) > 8 else "",
+        "discovery_questions": sections[3] if len(sections) > 9 else "",
+        "header6": sections[4] if len(sections) > 10 else "",
+        "cold_email": sections[5] if len(sections) > 11 else "",
+    }
+
+
+
 # 4. Use streamlit to create a web app
+
+
 def main():
-    st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":moneybag:")
+    st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":moneybag:", layout="wide")
 
     st.header(":crab: Aiven AI PPoV prospecting agent :moneybag: :crab:")
-    query = st.text_input("""The PPoV research takes about 1 minute to complete and accepts one target at a time.
-                          
-                          Enter research target (Full name and company):""")
+     
+    query = st.text_input("""The PPoV research takes about 1 minute to complete and accepts one target at a time. \ Enter research target (Full name and company):""")
+
+    # if query:
+    #     st.write("Researching ", query)
+
+    #     result = agent({"input": query})
+
+    #     st.info(result['output'])
 
     if query:
         st.write("Researching ", query)
 
         result = agent({"input": query})
 
-        st.info(result['output'])
+        result_text = process_input(result['output'])
+        
+        # st.info(result['output'])
+
+         # Define tabs for different sections
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+            "Summary on the research target",
+            "Cloud technology stack",
+            "Business Value Drivers",
+            "Aiven Unique Capabilities",
+            "Discovery Questions",
+            "Sample cold email"
+        ])
+
+
+        # Create and write tabs
+        with tab1:
+            st.write(result_text['research_target'])
+        
+        with tab2:
+            st.write(result_text['cloud_stack'])
+        
+        with tab3:
+            st.write(result_text['value_drivers'])
+        
+        with tab4:
+            st.write(result_text['aiven_capabilities'])
+        
+        with tab5:
+            st.write(result_text['discovery_questions'])
+        
+        with tab6:
+            st.write(result_text['cold_email'])
 
 
 if __name__ == '__main__':
