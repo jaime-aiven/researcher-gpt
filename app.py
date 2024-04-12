@@ -9,6 +9,7 @@ from langchain.prompts import MessagesPlaceholder
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.summarize import load_summarize_chain
+from langchain_openai import ChatOpenAI
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 from typing import Type
@@ -154,8 +155,8 @@ system_message = SystemMessage(
             2/ If there are urls of relevant links & articles, you will scrape them to gather more information
             3/ You should not make things up, you should only write facts & data that you have gathered
             4/ Your research is not complete until you are sure your output complies will all the instructions below
-            5/ Your output must contain the following sections: Summary on the research target, Summary of existing cloud technology stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
-            6/ Your output must contain the following sections: Summary on the research target, Summary of existing cloud technology stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources 
+            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email and #Sources, in this order.
+            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email and #Sources, in this order.
             7/ Your output must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
             8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
@@ -163,7 +164,7 @@ system_message = SystemMessage(
             11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
             12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
             13/ In the final output, You should include all reference data & links to back up your research
-            14/ Your output must be nicely formatted with headers for each section and bullet points"""
+            14/ Your output must be nicely formatted with headers for each section and bullet points. """
 )
 
 agent_kwargs = {
@@ -185,25 +186,37 @@ agent = initialize_agent(
 )
 
 
+# def process_input(text):
+#     # This function extracts the paragraphs as sections.
+#     sections = text.split('\n\n')  # Assume the paragraph uses double newlines to separate sections.
+#     return {
+#         "header1": sections[0] if len(sections) > 0 else "",
+#         "research_target": sections[1] if len(sections) > 1 else "",
+#         "header2": sections[2] if len(sections) > 2 else "",
+#         "cloud_stack": sections[3] if len(sections) > 3 else "",
+#         "header3": sections[4] if len(sections) > 4 else "",
+#         "value_drivers": sections[5] if len(sections) > 5 else "",
+#         "header4": sections[6] if len(sections) > 6 else "",
+#         "aiven_capabilities": sections[7] if len(sections) > 7 else "",
+#         "header5": sections[8] if len(sections) > 8 else "",
+#         "discovery_questions": sections[9] if len(sections) > 9 else "",
+#         "header6": sections[10] if len(sections) > 10 else "",
+#         "cold_email": sections[11] if len(sections) > 11 else "",
+    # }
+
 def process_input(text):
     # This function extracts the paragraphs as sections.
-    sections = text.split('\n\n')  # Assume the paragraph uses double newlines to separate sections.
+    sections = text.split('#')  # Assume the paragraph uses double newlines to separate sections.
     return {
-        "header1": sections[0] if len(sections) > 0 else "",
-        "research_target": sections[1] if len(sections) > 1 else "",
-        "header2": sections[2] if len(sections) > 2 else "",
-        "cloud_stack": sections[3] if len(sections) > 3 else "",
-        "header3": sections[4] if len(sections) > 4 else "",
-        "value_drivers": sections[5] if len(sections) > 5 else "",
-        "header4": sections[0] if len(sections) > 6 else "",
-        "aiven_capabilities": sections[1] if len(sections) > 7 else "",
-        "header5": sections[2] if len(sections) > 8 else "",
-        "discovery_questions": sections[3] if len(sections) > 9 else "",
-        "header6": sections[4] if len(sections) > 10 else "",
-        "cold_email": sections[5] if len(sections) > 11 else "",
-    }
-
-
+        "start": sections[0] if len(sections) > 0 else "",
+        "summary": sections[1] if len(sections) > 1 else "",
+        "cloud_stack": sections[2] if len(sections) > 2 else "",
+        "value_drivers": sections[3] if len(sections) > 3 else "",
+        "aiven_capabilities": sections[4] if len(sections) > 4 else "",
+        "discovery_questions": sections[5] if len(sections) > 5 else "",
+        "cold_email": sections[6] if len(sections) > 6 else "",
+        "sources": sections[7] if len(sections) > 7 else ""
+        }
 
 # 4. Use streamlit to create a web app
 
@@ -213,7 +226,10 @@ def main():
 
     st.header(":crab: Aiven AI PPoV prospecting agent :moneybag: :crab:")
      
-    query = st.text_input("""The PPoV research takes about 1 minute to complete and accepts one target at a time. \ Enter research target (Full name and company):""")
+
+    st.write("The PPoV research takes about 1 minute to complete and accepts one target at a time.")
+    
+    query = st.text_input("""Enter research target (Full name and company):""")
 
     # if query:
     #     st.write("Researching ", query)
@@ -232,19 +248,20 @@ def main():
         # st.info(result['output'])
 
          # Define tabs for different sections
-        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-            "Summary on the research target",
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+            "Summary",
             "Cloud technology stack",
             "Business Value Drivers",
             "Aiven Unique Capabilities",
             "Discovery Questions",
-            "Sample cold email"
+            "Sample cold email",
+            "Sources"
         ])
 
 
         # Create and write tabs
         with tab1:
-            st.write(result_text['research_target'])
+            st.write(result_text['summary'])
         
         with tab2:
             st.write(result_text['cloud_stack'])
@@ -260,6 +277,9 @@ def main():
         
         with tab6:
             st.write(result_text['cold_email'])
+        
+        with tab7:
+            st.write(result_text['sources'])
 
 
 if __name__ == '__main__':
