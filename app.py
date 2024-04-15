@@ -186,26 +186,8 @@ agent = initialize_agent(
 )
 
 
-# def process_input(text):
-#     # This function extracts the paragraphs as sections.
-#     sections = text.split('\n\n')  # Assume the paragraph uses double newlines to separate sections.
-#     return {
-#         "header1": sections[0] if len(sections) > 0 else "",
-#         "research_target": sections[1] if len(sections) > 1 else "",
-#         "header2": sections[2] if len(sections) > 2 else "",
-#         "cloud_stack": sections[3] if len(sections) > 3 else "",
-#         "header3": sections[4] if len(sections) > 4 else "",
-#         "value_drivers": sections[5] if len(sections) > 5 else "",
-#         "header4": sections[6] if len(sections) > 6 else "",
-#         "aiven_capabilities": sections[7] if len(sections) > 7 else "",
-#         "header5": sections[8] if len(sections) > 8 else "",
-#         "discovery_questions": sections[9] if len(sections) > 9 else "",
-#         "header6": sections[10] if len(sections) > 10 else "",
-#         "cold_email": sections[11] if len(sections) > 11 else "",
-    # }
-
+# This function extracts the paragraphs as sections.
 def process_input(text):
-    # This function extracts the paragraphs as sections.
     sections = text.split('#')  # Assume the paragraph uses double newlines to separate sections.
     return {
         "start": sections[0] if len(sections) > 0 else "",
@@ -217,6 +199,16 @@ def process_input(text):
         "cold_email": sections[6] if len(sections) > 6 else "",
         "sources": sections[7] if len(sections) > 7 else ""
         }
+
+
+# This function removes the first two lines of each section (section titles, which are needed by the LLM but useless for the end human user)
+def remove_first_two_lines(text):
+    lines = text.split('\n')
+    if len(lines) > 2:
+        return '\n'.join(lines[2:])
+    return ''  # Return an empty string if there are less than two lines
+
+
 
 # 4. Use streamlit to create a web app
 
@@ -261,25 +253,25 @@ def main():
 
         # Create and write tabs
         with tab1:
-            st.write(result_text['summary'])
+            st.write(remove_first_two_lines(result_text['summary']))
         
         with tab2:
-            st.write(result_text['cloud_stack'])
+            st.write(remove_first_two_lines(result_text['cloud_stack']))
         
         with tab3:
-            st.write(result_text['value_drivers'])
+            st.write(remove_first_two_lines(result_text['value_drivers']))
         
         with tab4:
-            st.write(result_text['aiven_capabilities'])
+            st.write(remove_first_two_lines(result_text['aiven_capabilities']))
         
         with tab5:
-            st.write(result_text['discovery_questions'])
+            st.write(remove_first_two_lines(result_text['discovery_questions']))
         
         with tab6:
-            st.write(result_text['cold_email'])
+            st.write(remove_first_two_lines(result_text['cold_email']))
         
         with tab7:
-            st.write(result_text['sources'])
+            st.write(remove_first_two_lines(result_text['sources']))
 
 
 if __name__ == '__main__':
