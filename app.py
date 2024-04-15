@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import pyperclip
 import clipboard
 from langchain import PromptTemplate
 from langchain.agents import initialize_agent, Tool
