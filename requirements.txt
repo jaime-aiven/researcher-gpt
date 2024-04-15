@@ -7,3 +7,5 @@ bs4
 tiktoken
 streamlit
 langchain-openai
+pyperclip
+clipboard

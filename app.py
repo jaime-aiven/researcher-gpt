@@ -16,6 +16,7 @@ from typing import Type
 from bs4 import BeautifulSoup
 import requests
 import json
+import pyperclip
 from langchain.schema import SystemMessage
 from fastapi import FastAPI
 import streamlit as st
@@ -71,7 +72,7 @@ def scrape_website(objective: str, url: str):
     # post_url = f"https://chrome.browserless.io/content?token={brwoserless_api_key}"
     # response = requests.post(post_url, headers=headers, data=data_json)
 
-    # Send a POST request to Wintr
+    # Send a POST request to Wintr (cheaper alternative)
     post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
     response = requests.post(post_url, headers=headers, data=data_json)
 
