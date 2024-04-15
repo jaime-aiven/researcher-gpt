@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-
+import clipboard
 from langchain import PromptTemplate
 from langchain.agents import initialize_agent, Tool
 from langchain.agents import AgentType
@@ -9,7 +9,8 @@ from langchain.prompts import MessagesPlaceholder
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.summarize import load_summarize_chain
-from langchain_openai import ChatOpenAI
+# from langchain_openai import ChatOpenAI
+from langchain_community.chat_models import ChatOpenAI
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 from typing import Type
@@ -20,6 +21,9 @@ import pyperclip
 from langchain.schema import SystemMessage
 from fastapi import FastAPI
 import streamlit as st
+from st_copy_to_clipboard import st_copy_to_clipboard
+
+
 
 load_dotenv()
 brwoserless_api_key = os.getenv("BROWSERLESS_API_KEY")
@@ -213,6 +217,12 @@ def remove_first_two_lines(text):
 
 # 4. Use streamlit to create a web app
 
+def on_copy_click(text):
+    st.session_state.copied.append(text)
+    clipboard.copy(text)
+
+if "copied" not in st.session_state: 
+    st.session_state.copied = []
 
 def main():
     st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":moneybag:", layout="wide")
@@ -269,7 +279,11 @@ def main():
             st.write(remove_first_two_lines(result_text['discovery_questions']))
         
         with tab6:
+            st.button("Copy to clipboard 📋", on_click=on_copy_click, args=(remove_first_two_lines(result_text['cold_email']),))
             st.write(remove_first_two_lines(result_text['cold_email']))
+            
+            for text in st.session_state.copied:
+                st.toast(f"Copied to clipboard: {text}", icon='✅' )
         
         with tab7:
             st.write(remove_first_two_lines(result_text['sources']))
