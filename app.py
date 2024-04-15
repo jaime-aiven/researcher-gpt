@@ -17,11 +17,9 @@ from typing import Type
 from bs4 import BeautifulSoup
 import requests
 import json
-import pyperclip
 from langchain.schema import SystemMessage
 from fastapi import FastAPI
 import streamlit as st
-from st_copy_to_clipboard import st_copy_to_clipboard
 
 
 
