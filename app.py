@@ -76,9 +76,7 @@ def scrape_website(objective: str, url: str):
     # response = requests.post(post_url, headers=headers, data=data_json)
 
     # Send a POST request to Wintr (cheaper alternative)
-    # post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
-    post_url = f"https://api.wintr.com/fetch?token={wintr_api_key}"
-
+    post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
     response = requests.post(post_url, headers=headers, data=data_json)
 
     # Check the response status code
@@ -161,16 +159,17 @@ system_message = SystemMessage(
             2/ If there are urls of relevant links & articles, you will scrape them to gather more information
             3/ You should not make things up, you should only write facts & data that you have gathered
             4/ Your research is not complete until you are sure your output complies will all the instructions below
-            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email and #Sources, in this order.
-            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email and #Sources, in this order.
+            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email, #Recommended content and #Sources, in this order.
+            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email, #Recommended content and #Sources, in this order.
             7/ Your output must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
             8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
             10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
-            11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
-            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default. You can use madewith.com for this.
-            13/ In the final output, You should include all reference data & links to back up your research
-            14/ Your output must be nicely formatted with headers for each section and bullet points. """
+            11/ As part of the output (under the #Sample cold email header), please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
+            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
+            13/ Based on the research above, please also include a list of five pieces of content (pages, blog posts, articles, videos etc) from aiven.io that would be most interesting to the research target; under the #Recommended content heading
+            14/ In the final output, You should include all reference data & links to back up your research
+            15/ Your output must be nicely formatted with headers for each section and bullet points. """
 )
 
 agent_kwargs = {
@@ -203,7 +202,8 @@ def process_input(text):
         "aiven_capabilities": sections[4] if len(sections) > 4 else "",
         "discovery_questions": sections[5] if len(sections) > 5 else "",
         "cold_email": sections[6] if len(sections) > 6 else "",
-        "sources": sections[7] if len(sections) > 7 else ""
+        "recommended_content": sections[7] if len(sections) > 7 else "",
+        "sources": sections[8] if len(sections) > 8 else ""
         }
 
 
@@ -252,13 +252,14 @@ def main():
         # st.info(result['output'])
 
          # Define tabs for different sections
-        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
             "Summary",
             "Cloud technology stack",
             "Business Value Drivers",
             "Aiven Unique Capabilities",
             "Discovery Questions",
             "Sample cold email",
+            "Recommended content"
             "Sources"
         ])
 
@@ -280,13 +281,15 @@ def main():
             st.write(remove_first_two_lines(result_text['discovery_questions']))
         
         with tab6:
-            # st.button("Copy to clipboard 📋", on_click=on_copy_click, args=(remove_first_two_lines(result_text['cold_email']),))
             st.write(remove_first_two_lines(result_text['cold_email']))
             
             for text in st.session_state.copied:
                 st.toast(f"Copied to clipboard: {text}", icon='✅' )
         
         with tab7:
+            st.write(remove_first_two_lines(result_text['recommended_content']))
+
+        with tab8:
             st.write(remove_first_two_lines(result_text['sources']))
 
 
