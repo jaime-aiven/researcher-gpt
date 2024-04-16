@@ -72,11 +72,13 @@ def scrape_website(objective: str, url: str):
     data_json = json.dumps(data)
 
     # Send the POST request to Browserless
-    # post_url = f"https://chrome.browserless.io/content?token={brwoserless_api_key}"
+    # post_url = f"https://chrome.browserless.io/content?token={browserless_api_key}"
     # response = requests.post(post_url, headers=headers, data=data_json)
 
     # Send a POST request to Wintr (cheaper alternative)
-    post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
+    # post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
+    post_url = f"https://api.wintr.com/fetch?token={wintr_api_key}"
+
     response = requests.post(post_url, headers=headers, data=data_json)
 
     # Check the response status code
@@ -166,7 +168,7 @@ system_message = SystemMessage(
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
             10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
             11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
-            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
+            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default. You can use madewith.com for this.
             13/ In the final output, You should include all reference data & links to back up your research
             14/ Your output must be nicely formatted with headers for each section and bullet points. """
 )
@@ -278,8 +280,8 @@ def main():
             st.write(remove_first_two_lines(result_text['discovery_questions']))
         
         with tab6:
-            st.button("Copy to clipboard 📋", on_click=on_copy_click, args=(remove_first_two_lines(result_text['cold_email']),))
-            st.write(remove_first_two_lines(result_text['cold_email']))
+            # st.button("Copy to clipboard 📋", on_click=on_copy_click, args=(remove_first_two_lines(result_text['cold_email']),))
+            st.code(remove_first_two_lines(result_text['cold_email']))
             
             for text in st.session_state.copied:
                 st.toast(f"Copied to clipboard: {text}", icon='✅' )
