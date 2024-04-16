@@ -162,8 +162,8 @@ system_message = SystemMessage(
             2/ If there are urls of relevant links & articles, you will scrape them to gather more information
             3/ You should not make things up, you should only write facts & data that you have gathered
             4/ Your research is not complete until you are sure your output complies will all the instructions below
-            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email and #Sources, in this order.
-            5/ Your output must contain the following sections: #Summary on the research target, #Summary of existing cloud technology stack, #Business Value Drivers, #Aiven Unique Capabilities, #Discovery Questions, #Sample cold email and #Sources, in this order.
+            5/ Your output must contain the following sections with these exact section names: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
+            5/ Your output must contain the following sections with these exact section names: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
             7/ Your output must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
             8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
@@ -216,6 +216,42 @@ def remove_first_two_lines(text):
     return ''  # Return an empty string if there are less than two lines
 
 
+# This function should provide more accurate parsing of the sections
+import re
+
+def parse_llm_output(text):
+    # Define the section headers based on the ## pattern observed
+    headers = [
+        "Summary on the research target",
+        "Summary of existing cloud stack",
+        "Business Value Drivers",
+        "Aiven Unique Capabilities",
+        "Discovery Questions",
+        "Sample cold email",
+        "Sources"
+    ]
+
+    # Escape headers to safely use them in a regex pattern
+    escaped_headers = [re.escape(header) for header in headers]
+
+    # Create a dictionary to store the sections
+    sections = {}
+    
+    # Split the text at each header, keep the headers as delimiters
+    pattern = r'(' + '|'.join(escaped_headers) + r')'
+    parts = re.split(pattern, text)
+    
+    # The split includes headers as separate parts, so pair headers with their following content
+    for i in range(1, len(parts), 2):  # Start from 1 and take steps of 2 to get headers
+        if i + 1 < len(parts):
+            sections[parts[i]] = parts[i + 1].strip()  # Strip whitespace and associate header with content
+
+    return sections
+
+
+
+
+
 
 # 4. Use streamlit to create a web app
 
@@ -236,6 +272,7 @@ def main():
     
     query = st.text_input("""Enter research target (Full name and company):""")
 
+
     # if query:
     #     st.write("Researching ", query)
 
@@ -248,47 +285,40 @@ def main():
 
         result = agent({"input": query})
 
-        result_text = process_input(result['output'])
-        
-        # st.info(result['output'])
+       
+        sections = parse_llm_output(result['output'])
+        tabs = st.tabs([k.replace("#", "") for k in sections.keys()])  # Create tabs without the '#' in the title
 
-         # Define tabs for different sections
-        tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-            "Summary",
-            "Cloud technology stack",
-            "Business Value Drivers",
-            "Aiven Unique Capabilities",
-            "Discovery Questions",
-            "Sample cold email",
-            "Sources"
-        ])
+        for tab, key in zip(tabs, sections.keys()):
+            with tab:
+                st.write(sections[key])
 
 
-        # Create and write tabs
-        with tab1:
-            st.write(remove_first_two_lines(result_text['summary']))
+        # # Create and write tabs
+        # with tab1:
+        #     st.write(remove_first_two_lines(result_text['summary']))
         
-        with tab2:
-            st.write(remove_first_two_lines(result_text['cloud_stack']))
+        # with tab2:
+        #     st.write(remove_first_two_lines(result_text['cloud_stack']))
         
-        with tab3:
-            st.write(remove_first_two_lines(result_text['value_drivers']))
+        # with tab3:
+        #     st.write(remove_first_two_lines(result_text['value_drivers']))
         
-        with tab4:
-            st.write(remove_first_two_lines(result_text['aiven_capabilities']))
+        # with tab4:
+        #     st.write(remove_first_two_lines(result_text['aiven_capabilities']))
         
-        with tab5:
-            st.write(remove_first_two_lines(result_text['discovery_questions']))
+        # with tab5:
+        #     st.write(remove_first_two_lines(result_text['discovery_questions']))
         
-        with tab6:
-            # st.button("Copy to clipboard 📋", on_click=on_copy_click, args=(remove_first_two_lines(result_text['cold_email']),))
-            st.write(remove_first_two_lines(result_text['cold_email']))
+        # with tab6:
+        #     # st.button("Copy to clipboard 📋", on_click=on_copy_click, args=(remove_first_two_lines(result_text['cold_email']),))
+        #     st.write(remove_first_two_lines(result_text['cold_email']))
             
-            for text in st.session_state.copied:
-                st.toast(f"Copied to clipboard: {text}", icon='✅' )
+        #     for text in st.session_state.copied:
+        #         st.toast(f"Copied to clipboard: {text}", icon='✅' )
         
-        with tab7:
-            st.write(remove_first_two_lines(result_text['sources']))
+        # with tab7:
+        #     st.write(remove_first_two_lines(result_text['sources']))
 
 
 if __name__ == '__main__':
