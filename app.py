@@ -281,7 +281,7 @@ def main():
         
         with tab6:
             # st.button("Copy to clipboard 📋", on_click=on_copy_click, args=(remove_first_two_lines(result_text['cold_email']),))
-            st.code(remove_first_two_lines(result_text['cold_email']))
+            st.write(remove_first_two_lines(result_text['cold_email']))
             
             for text in st.session_state.copied:
                 st.toast(f"Copied to clipboard: {text}", icon='✅' )
