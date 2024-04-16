@@ -226,9 +226,9 @@ if "copied" not in st.session_state:
     st.session_state.copied = []
 
 def main():
-    st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":moneybag:", layout="wide")
+    st.set_page_config(page_title="Aiven AI PPoV agent", page_icon=":moneybag:", layout="wide")
 
-    st.header(":crab: Aiven AI PPoV prospecting agent :moneybag: :crab:")
+    st.header(":crab: Aiven AI PPoV agent :moneybag: :crab:")
      
 
     st.write("The PPoV research takes about 1 minute to complete and accepts one target at a time.")
