@@ -32,8 +32,6 @@ serper_api_key = os.getenv("SERP_API_KEY")
 wintr_api_key = os.getenv("WINTR_API_KEY")
 
 # 1. Tool for search
-
-
 def search(query):
     url = "https://google.serper.dev/search"
 
@@ -88,7 +86,7 @@ def scrape_website(objective: str, url: str):
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, "html.parser")
         text = soup.get_text()
-        print("CONTENTTTTTT:", text)
+        print("CONTENT:", text)
 
         if len(text) > 10000:
             output = summary(objective, text)
@@ -98,7 +96,32 @@ def scrape_website(objective: str, url: str):
     else:
         print(f"HTTP request failed with status code {response.status_code}")
 
+#Tool for searching Stackshare
+#         #TBD
+def stack_search(company_name):
+    url = "https://google.serper.dev/search"
 
+    # Append site:stackshare.com to the query to restrict results to StackShare
+    full_query = f"site:stackshare.io {company_name}"
+
+    payload = json.dumps({
+        "q": full_query
+    })
+
+    headers = {
+        'X-API-KEY': serper_api_key,
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+    return response.text
+
+
+
+#Tool for sumarizing 
 def summary(objective, content):
     llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 
@@ -153,6 +176,11 @@ tools = [
         description="useful for when you need to answer questions about current events, data. You should ask targeted questions"
     ),
     ScrapeWebsiteTool(),
+    Tool(
+        name="Stacksearch",
+        func=stack_search,
+        description="Useful for answering questions about a company's technology stack. You should ask targeted questions"
+    )
 ]
 
 system_message = SystemMessage(
@@ -163,10 +191,10 @@ system_message = SystemMessage(
             1/ You should do enough research to gather as much information as possible about the objective
             2/ If there are urls of relevant links & articles, you will scrape them to gather more information using the scraping tool.
             3/ You should not make things up, you should only write facts & data that you have gathered
-            4/ Your research is not complete until you are sure your output complies will all the instructions below
+            4/ Your research is not complete until you are sure your output complies will all the instructions below.
             5/ Your output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
             6/ Your output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
-            7/ It is very important that you figure out what kind of cloud infrastructure the company where our target works uses. This does not need to be summarized extensively, but rather explained in detail in a couple of paragraphs.
+            7/ It is very important that you figure out what kind of cloud infrastructure the company where our target works uses, particularly databases, cloud providers and data streaming engines. This does not need to be summarized extensively, but rather explained in detail in a couple of paragraphs. Use the stack_search utility for this.
             8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company. You can parse and crawl the public web for this.
             10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the monetary value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
@@ -184,7 +212,7 @@ agent_kwargs = {
 
 llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 memory = ConversationSummaryBufferMemory(
-    memory_key="memory", return_messages=True, llm=llm, max_token_limit=1200)
+    memory_key="memory", return_messages=True, llm=llm, max_token_limit=1000)
 
 agent = initialize_agent(
     tools,
