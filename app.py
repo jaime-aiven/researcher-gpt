@@ -46,9 +46,14 @@ def search(query):
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
-    print(response.text)
+    print(remove_multiple_line_breaks(response.text))
 
-    return response.text
+    return remove_multiple_line_breaks(response.text)
+
+# Tool to remove double line breaks from scraping
+def remove_multiple_line_breaks(text):
+    # Replace two or more consecutive line breaks with a single line break
+    return re.sub(r'\n{2,}', '\n', text)
 
 
 # 2. Tool for scraping
@@ -59,7 +64,7 @@ def scrape_website(objective: str, url: str):
     print("Scraping website...")
     # Define the headers for the request
     headers = {
-        'Cache-Control': 'no-cache',
+        # 'Cache-Control': 'no-cache',
         'Content-Type': 'application/json',
     }
 
@@ -85,7 +90,7 @@ def scrape_website(objective: str, url: str):
     # Check the response status code
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, "html.parser")
-        text = soup.get_text()
+        text = remove_multiple_line_breaks(soup.get_text())
         print("CONTENT:", text)
 
         if len(text) > 10000:
@@ -115,9 +120,9 @@ def stack_search(company_name):
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
-    print(response.text)
+    print(remove_multiple_line_breaks(response.text))
 
-    return response.text
+    return remove_multiple_line_breaks(response.text)
 
 
 
@@ -187,22 +192,22 @@ system_message = SystemMessage(
     content="""You are a world class researcher, who can do detailed research on any topic and produce facts based results; 
             you do not make things up, you will try as hard as possible to gather facts & data to back up the research
             
-            Please make sure you complete the objective above with the following rules:
-            1/ You should do enough research to gather as much information as possible about the objective
-            2/ If there are urls of relevant links & articles, you will scrape them to gather more information using the scraping tool.
-            3/ You should not make things up, you should only write facts & data that you have gathered
+            Please make sure you complete the task above with the following rules:
+            1/ You should do enough research to gather as much information as possible about the research target, who is always a person
+            2/ If there are urls of relevant links & articles, you will scrape them to gather more information.
+            3/ You should not make things up, you should only write facts & data that you have gathered.
             4/ Your research is not complete until you are sure your output complies will all the instructions below.
-            5/ Your output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
-            6/ Your output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
+            5/ Your final output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
+            6/ Your final output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
+            7/ Company information should include a summary of current financial state, like any acquisitions, press releases, income development, profits, losses, fines. An estimation of financial sentiment (positive/neutral/negative) and trend (upwards/downwards) must be included, complete with factors explaining it.
             7/ It is very important that you figure out what kind of cloud infrastructure the company where our target works uses, particularly databases, cloud providers and data streaming engines. This does not need to be summarized extensively, but rather explained in detail in a couple of paragraphs. Use the stack_search utility for this.
             8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company. You can parse and crawl the public web for this.
             10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the monetary value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
             11/ As a part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they open it and respond to it positively.
             12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
-            13/ Company information should include a summary of current financial state, like any acquisitions, press releases, income development, profits, losses, fines. An estimation of financial sentiment (positive/neutral/negative) and trend (upwards/downwards) must be included, complete with factors explaining it.
             14/ The final section of the output must include all reference data & links to back up your research, including hyperlinks
-            15/ Your output must be nicely formatted with headers for each section and bullet points. """
+             """
 )
 
 agent_kwargs = {
@@ -212,7 +217,7 @@ agent_kwargs = {
 
 llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 memory = ConversationSummaryBufferMemory(
-    memory_key="memory", return_messages=True, llm=llm, max_token_limit=1000)
+    memory_key="memory", return_messages=True, llm=llm, max_token_limit=1500)
 
 agent = initialize_agent(
     tools,
