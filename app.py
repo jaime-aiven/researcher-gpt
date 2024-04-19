@@ -73,12 +73,12 @@ def scrape_website(objective: str, url: str):
     data_json = json.dumps(data)
 
     # Send the POST request to Browserless
-    # post_url = f"https://chrome.browserless.io/content?token={browserless_api_key}"
-    # response = requests.post(post_url, headers=headers, data=data_json)
+    post_url = f"https://chrome.browserless.io/content?token={browserless_api_key}"
+    response = requests.post(post_url, headers=headers, data=data_json)
 
     # Send a POST request to Wintr (cheaper alternative)
     # post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
-    post_url = f"https://api.wintr.com/fetch?token={wintr_api_key}"
+    # post_url = f"https://api.wintr.com/fetch?token={wintr_api_key}"
 
     response = requests.post(post_url, headers=headers, data=data_json)
 
@@ -281,6 +281,10 @@ def main():
 
     if query:
         st.write("Researching ", query)
+
+        progress_bar = st.progress(0)
+        # time.sleep(1)  # Simulate delay for fetching data
+        progress_bar.progress(20)
 
         result = agent({"input": query})
 
