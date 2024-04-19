@@ -53,7 +53,8 @@ def search(query):
 # Tool to remove double line breaks from scraping
 def remove_multiple_line_breaks(text):
     # Replace two or more consecutive line breaks with a single line break
-    return re.sub(r'\n{2,}', '\n', text)
+    normalized_text = text.replace('\\n', '\n')
+    return re.sub(r'\n{2,}', '\n', normalized_text)
 
 
 # 2. Tool for scraping
@@ -181,33 +182,32 @@ tools = [
         description="useful for when you need to answer questions about current events, data. You should ask targeted questions"
     ),
     ScrapeWebsiteTool(),
-    Tool(
-        name="Stacksearch",
-        func=stack_search,
-        description="Useful for answering questions about a company's technology stack. You should ask targeted questions"
-    )
+    # Tool(
+    #     name="Stacksearch",
+    #     func=stack_search,
+    #     description="Useful for answering questions about a company's technology stack. You should ask targeted questions"
+    # )
 ]
 
 system_message = SystemMessage(
-    content="""You are a world class researcher, who can do detailed research on any topic and produce facts based results; 
+    content="""You are a world-class researcher, who can do detailed research on any topic and produce fact-based results; 
             you do not make things up, you will try as hard as possible to gather facts & data to back up the research
             
-            Please make sure you complete the task above with the following rules:
-            1/ You should do enough research to gather as much information as possible about the research target, who is always a person
-            2/ If there are urls of relevant links & articles, you will scrape them to gather more information.
-            3/ You should not make things up, you should only write facts & data that you have gathered.
-            4/ Your research is not complete until you are sure your output complies will all the instructions below.
-            5/ Your final output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
-            6/ Your final output must contain the following sections with these exact section names and in this order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources.
-            7/ Company information should include a summary of current financial state, like any acquisitions, press releases, income development, profits, losses, fines. An estimation of financial sentiment (positive/neutral/negative) and trend (upwards/downwards) must be included, complete with factors explaining it.
-            7/ It is very important that you figure out what kind of cloud infrastructure the company where our target works uses, particularly databases, cloud providers and data streaming engines. This does not need to be summarized extensively, but rather explained in detail in a couple of paragraphs. Use the stack_search utility for this.
+            Please make sure you complete the objective above with the following rules:
+            1/ You should do enough research to gather as much information as possible about the objective
+            2/ If there are urls of relevant links & articles, you will scrape them to gather more information
+            3/ You should not make things up, you should only write facts & data that you have gathered
+            4/ Your research is not complete until you are sure your output complies will all the instructions below
+            5/ Your output must contain the following sections with these exact section names: Summary of the target, Existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
+            5/ Your output must contain the following sections with these exact section names: Summary of the target, Existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
             8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
-            9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company. You can parse and crawl the public web for this.
-            10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the monetary value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
-            11/ As a part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they open it and respond to it positively.
-            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default.
-            14/ The final section of the output must include all reference data & links to back up your research, including hyperlinks
-             """
+            9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
+            10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
+            11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
+            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default. You can use madewith.com for this.
+            13/ In the final output, You should include all reference data & links to back up your research.
+            14/ Your output must contain the section names mentioned above, with no special characters in them.
+            """
 )
 
 agent_kwargs = {
@@ -230,18 +230,18 @@ agent = initialize_agent(
 
 
 # This function extracts the paragraphs as sections.
-def process_input(text):
-    sections = text.split('#')  # Assume the paragraph uses double newlines to separate sections.
-    return {
-        "start": sections[0] if len(sections) > 0 else "",
-        "summary": sections[1] if len(sections) > 1 else "",
-        "cloud_stack": sections[2] if len(sections) > 2 else "",
-        "value_drivers": sections[3] if len(sections) > 3 else "",
-        "aiven_capabilities": sections[4] if len(sections) > 4 else "",
-        "discovery_questions": sections[5] if len(sections) > 5 else "",
-        "cold_email": sections[6] if len(sections) > 6 else "",
-        "sources": sections[7] if len(sections) > 7 else ""
-        }
+# def process_input(text):
+#     sections = text.split('#')  # Assume the paragraph uses double newlines to separate sections.
+#     return {
+#         "start": sections[0] if len(sections) > 0 else "",
+#         "summary": sections[1] if len(sections) > 1 else "",
+#         "cloud_stack": sections[2] if len(sections) > 2 else "",
+#         "value_drivers": sections[3] if len(sections) > 3 else "",
+#         "aiven_capabilities": sections[4] if len(sections) > 4 else "",
+#         "discovery_questions": sections[5] if len(sections) > 5 else "",
+#         "cold_email": sections[6] if len(sections) > 6 else "",
+#         "sources": sections[7] if len(sections) > 7 else ""
+#         }
 
 
 # This function removes the first two lines of each section (section titles, which are needed by the LLM but useless for the end human user)
@@ -260,13 +260,13 @@ def remove_first_two_lines(text):
 def parse_llm_output(text):
     # Define the section headers based on the ## pattern observed
     headers = [
-        "Summary on the research target",
-        "Summary of existing cloud stack",
-        "Business Value Drivers",
-        "Aiven Unique Capabilities",
-        "Discovery Questions",
-        "Sample cold email",
-        "Sources"
+        "## Summary of the target:",
+        "## Existing cloud stack:",
+        "## Business Value Drivers:",
+        "## Aiven Unique Capabilities:",
+        "## Discovery Questions:",
+        "## Sample cold email:",
+        "## Sources:"
     ]
 
     # Escape headers to safely use them in a regex pattern
@@ -293,12 +293,12 @@ def parse_llm_output(text):
 
 # 4. Use streamlit to create a web app
 
-def on_copy_click(text):
-    st.session_state.copied.append(text)
-    clipboard.copy(text)
+# def on_copy_click(text):
+#     st.session_state.copied.append(text)
+#     clipboard.copy(text)
 
-if "copied" not in st.session_state: 
-    st.session_state.copied = []
+# if "copied" not in st.session_state: 
+#     st.session_state.copied = []
 
 def main():
     st.set_page_config(page_title="Aiven AI PPoV prospecting agent", page_icon=":moneybag:", layout="wide")
@@ -334,7 +334,7 @@ def main():
         sections = parse_llm_output(result['output'])
         progress_bar.progress(50)
         
-        tabs = st.tabs([k.replace("#", "") for k in sections.keys()])  # Create tabs without the '#' in the title
+        tabs = st.tabs([k.replace("#", "").replace(":","") for k in sections.keys()])  # Create tabs without the '#' in the title
         progress_bar.progress(70)
 
 
