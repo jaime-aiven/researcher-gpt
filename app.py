@@ -26,7 +26,7 @@ import re
 
 
 load_dotenv()
-brwoserless_api_key = os.getenv("BROWSERLESS_API_KEY")
+browserless_api_key = os.getenv("BROWSERLESS_API_KEY")
 serper_api_key = os.getenv("SERP_API_KEY")
 wintr_api_key = os.getenv("WINTR_API_KEY")
 
