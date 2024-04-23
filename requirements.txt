@@ -9,4 +9,3 @@ streamlit
 langchain-openai
 pyperclip
 clipboard
-re
