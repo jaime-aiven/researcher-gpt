@@ -51,6 +51,36 @@ def search(query):
 
     return response.text
 
+# 2. Tool to search Stackshare
+
+def stack_search(company_name):
+    url = "https://google.serper.dev/search"
+
+    # Append site:stackshare.com to the query to restrict results to StackShare
+    full_query = f"site:stackshare.io {company_name}"
+
+    payload = json.dumps({
+        "q": full_query
+    })
+
+    headers = {
+        'X-API-KEY': serper_api_key,
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(remove_multiple_line_breaks(response.text))
+
+    return remove_multiple_line_breaks(response.text)
+
+
+# Tool to remove double line breaks from scraping
+def remove_multiple_line_breaks(text):
+    # Replace two or more consecutive line breaks with a single line break
+    normalized_text = text.replace('\\n', '\n')
+    return re.sub(r'\n{2,}', '\n', normalized_text)
+
 
 # 2. Tool for scraping
 def scrape_website(objective: str, url: str):
@@ -76,10 +106,6 @@ def scrape_website(objective: str, url: str):
     post_url = f"https://chrome.browserless.io/content?token={browserless_api_key}"
     response = requests.post(post_url, headers=headers, data=data_json)
 
-    # Send a POST request to Wintr (cheaper alternative)
-    # post_url = f"https://chrome.browserless.io/content?token={wintr_api_key}"
-    # post_url = f"https://api.wintr.com/fetch?token={wintr_api_key}"
-
     response = requests.post(post_url, headers=headers, data=data_json)
 
     # Check the response status code
@@ -95,6 +121,34 @@ def scrape_website(objective: str, url: str):
             return text
     else:
         print(f"HTTP request failed with status code {response.status_code}")
+
+
+#Tool to search Stackshare
+
+def stacksearch(query):
+    url = "https://google.serper.dev/search"
+
+    payload = json.dumps({
+        "q": query
+    })
+
+    headers = {
+        'X-API-KEY': serper_api_key,
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    print(response.text)
+
+    return response.text
+
+
+
+
+
+
+
 
 
 def summary(objective, content):
@@ -150,7 +204,11 @@ tools = [
         func=search,
         description="useful for when you need to answer questions about current events, data. You should ask targeted questions"
     ),
-    ScrapeWebsiteTool(),
+    ScrapeWebsiteTool(), Tool(
+        name="Stacksearch",
+        func=stack_search,
+        description="Useful for answering questions about a company's technology stack. You should ask targeted questions"
+    )
 ]
 
 system_message = SystemMessage(
