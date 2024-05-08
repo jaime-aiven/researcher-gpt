@@ -2,16 +2,19 @@ import os
 from dotenv import load_dotenv
 import pyperclip
 import clipboard
-from langchain import PromptTemplate
+# from langchain import PromptTemplate
+from langchain_core.prompts import PromptTemplate
+from langchain_core.globals import set_verbose
 from langchain.agents import initialize_agent, Tool
-from langchain.agents import AgentType
-from langchain.chat_models import ChatOpenAI
+from langchain.agents import AgentType, create_structured_chat_agent
+# from langchain.chat_models import ChatOpenAI
+from langchain_openai import ChatOpenAI
 from langchain.prompts import MessagesPlaceholder
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.chains.summarize import load_summarize_chain
 # from langchain_openai import ChatOpenAI
-from langchain_community.chat_models import ChatOpenAI
+# from langchain_community.chat_models import ChatOpenAI
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 from typing import Type
@@ -29,6 +32,10 @@ load_dotenv()
 browserless_api_key = os.getenv("BROWSERLESS_API_KEY")
 serper_api_key = os.getenv("SERP_API_KEY")
 wintr_api_key = os.getenv("WINTR_API_KEY")
+
+
+#Set Verbose to true
+set_verbose(True)
 
 # 1. Tool for search
 
@@ -79,7 +86,11 @@ def stack_search(company_name):
 def remove_multiple_line_breaks(text):
     # Replace two or more consecutive line breaks with a single line break
     normalized_text = text.replace('\\n', '\n')
-    return re.sub(r'\n{2,}', '\n', normalized_text)
+    first_pass = re.sub(r'\n{2,}', '\n', normalized_text)
+    second_pass = re.sub(r'\n{2,}', '\n', first_pass)
+    third_pass = re.sub(r'\n{2,}', '\n', second_pass)
+    
+    return re.sub(r'\n{2,}', '\n', third_pass)
 
 
 # 2. Tool for scraping
@@ -111,7 +122,7 @@ def scrape_website(objective: str, url: str):
     # Check the response status code
     if response.status_code == 200:
         soup = BeautifulSoup(response.content, "html.parser")
-        text = soup.get_text()
+        text = remove_multiple_line_breaks(soup.get_text())
         print("CONTENTTTTTT:", text)
 
         if len(text) > 10000:
@@ -123,33 +134,8 @@ def scrape_website(objective: str, url: str):
         print(f"HTTP request failed with status code {response.status_code}")
 
 
-#Tool to search Stackshare
 
-def stacksearch(query):
-    url = "https://google.serper.dev/search"
-
-    payload = json.dumps({
-        "q": query
-    })
-
-    headers = {
-        'X-API-KEY': serper_api_key,
-        'Content-Type': 'application/json'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)
-
-    print(response.text)
-
-    return response.text
-
-
-
-
-
-
-
-
+# Tool to summarize longer texts
 
 def summary(objective, content):
     llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
@@ -205,7 +191,7 @@ tools = [
         description="useful for when you need to answer questions about current events, data. You should ask targeted questions"
     ),
     ScrapeWebsiteTool(), Tool(
-        name="Stacksearch",
+        name="Stack_search",
         func=stack_search,
         description="Useful for answering questions about a company's technology stack. You should ask targeted questions"
     )
@@ -220,14 +206,14 @@ system_message = SystemMessage(
             2/ If there are urls of relevant links & articles, you will scrape them to gather more information
             3/ You should not make things up, you should only write facts & data that you have gathered
             4/ Your research is not complete until you are sure your output complies will all the instructions below
-            5/ Your output must contain the following sections with these exact section names: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
-            5/ Your output must contain the following sections with these exact section names: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
+            5/ Your output must contain the following sections with these exact section names in order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
+            5/ Your output must contain the following sections with these exact section names in order: Summary on the research target, Summary of existing cloud stack, Business Value Drivers, Aiven Unique Capabilities, Discovery Questions, Sample cold email and Sources, in this order.
             7/ Your output must contain insights on what topics, tone and keywords this person would be most receptive to in a cold email about AI cloud data infrastructure
             8/ The output should contain suggestions on how the Aiven data platform (which provides Kafka, Flink, PostgreSQL, MySQL, Cassandra, OpenSearch, CLickhouse, Redis, Grafana) in all major clouds) could address their needs for streaming, storing and serving data in the cloud. The emphasis is on a provocative point of view.
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
             10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
             11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
-            12/ The email should reference the technology that they already use and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default. You can use madewith.com for this.
+            12/ The email should reference the technology that they already use (you can use the Stack_search tool for this) and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default. You can use madewith.com for this.
             13/ In the final output, You should include all reference data & links to back up your research
             14/ Your output must be nicely formatted with headers for each section and bullet points. """
 )
@@ -241,6 +227,8 @@ llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 memory = ConversationSummaryBufferMemory(
     memory_key="memory", return_messages=True, llm=llm, max_token_limit=1500)
 
+
+# Legacy (works!)
 agent = initialize_agent(
     tools,
     llm,
@@ -249,6 +237,14 @@ agent = initialize_agent(
     agent_kwargs=agent_kwargs,
     memory=memory,
 )
+
+# #New implm
+# agent = create_structured_chat_agent(
+#     tools,
+#     llm,
+#     agent_kwargs=agent_kwargs,
+#     memory=memory,
+# )
 
 
 # This function extracts the paragraphs as sections.

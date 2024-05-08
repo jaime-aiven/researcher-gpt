@@ -9,3 +9,5 @@ streamlit
 langchain-openai
 pyperclip
 clipboard
+langchain-openai
+langchain-community
