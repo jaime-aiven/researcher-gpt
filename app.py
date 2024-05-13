@@ -8,6 +8,10 @@ from langchain_core.globals import set_verbose
 from langchain.agents import initialize_agent, Tool
 from langchain.agents import AgentType, create_structured_chat_agent
 # from langchain.chat_models import ChatOpenAI
+from langchain.document_loaders.csv_loader import CSVLoader
+from langchain_community.vectorstores import FAISS
+from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.chains import LLMChain
 from langchain_openai import ChatOpenAI
 from langchain.prompts import MessagesPlaceholder
 from langchain.memory import ConversationSummaryBufferMemory
@@ -32,6 +36,15 @@ load_dotenv()
 browserless_api_key = os.getenv("BROWSERLESS_API_KEY")
 serper_api_key = os.getenv("SERP_API_KEY")
 wintr_api_key = os.getenv("WINTR_API_KEY")
+
+
+# Vectorize and store the Aiven 2000 csv data
+loader = CSVLoader(file_path="A2Kfirmographics.csv", encoding="utf8")
+documents = loader.load()
+
+embeddings = OpenAIEmbeddings()
+db = FAISS.from_documents(documents, embeddings)
+
 
 
 #Set Verbose to true
@@ -84,13 +97,20 @@ def stack_search(company_name):
 
 # Tool to remove double line breaks from scraping
 def remove_multiple_line_breaks(text):
-    # Replace two or more consecutive line breaks with a single line break
+    # Normalize the line breaks from '\\n' to '\n'
     normalized_text = text.replace('\\n', '\n')
-    first_pass = re.sub(r'\n{2,}', '\n', normalized_text)
-    second_pass = re.sub(r'\n{2,}', '\n', first_pass)
-    third_pass = re.sub(r'\n{2,}', '\n', second_pass)
+
+    # Initialize the variable for processing
+    previous_text = normalized_text
+    while True:
+        # Replace two or more consecutive line breaks with a single line break
+        current_text = re.sub(r'\n{2,}', '\n', previous_text)
+        # Check if any more replacements are needed
+        if current_text == previous_text:
+            break
+        previous_text = current_text
     
-    return re.sub(r'\n{2,}', '\n', third_pass)
+    return current_text
 
 
 # 2. Tool for scraping
@@ -183,6 +203,24 @@ class ScrapeWebsiteTool(BaseTool):
         raise NotImplementedError("error here")
 
 
+
+
+
+# Function for similarity search
+
+def retrieve_relevant_info_from_db(query):
+    similar_data = db.similarity_search(query, k=3)
+
+    page_contents_array = [doc.page_content for doc in similar_data]
+
+    # For debug
+    # print(page_contents_array)
+
+    return page_contents_array
+
+
+
+
 # 3. Create langchain agent with the tools above
 tools = [
     Tool(
@@ -198,8 +236,7 @@ tools = [
 ]
 
 system_message = SystemMessage(
-    content="""You are a world class researcher, who can do detailed research on any topic and produce facts based results; 
-            you do not make things up, you will try as hard as possible to gather facts & data to back up the research
+    content="""You are a world class researcher, who can do detailed research on any topic and produce facts based results; you do not make things up, you will try as hard as possible to gather facts & data to back up the research
             
             Please make sure you complete the objective above with the following rules:
             1/ You should do enough research to gather as much information as possible about the objective
@@ -213,9 +250,13 @@ system_message = SystemMessage(
             9/ Your output must not list all the products that Aiven offers, but rather only the ones that would match the business value drivers of the company
             10/ The output should help a seller understand the target's problem, the monetary cost of the problem to their business, the solution to the problem, the $$ value of solving the problem , what $ they are prepared to spend to solve the problem, and the fact that Aiven can solve the problem
             11/ As the final part of the output, please write a sample 3-paragraph cold email to the research target from an Aiven seller that would address the pains uncovered from the provocative sales point of view of Aiven, in a way that maximizes the likelihood they engage in a sales conversation with Aiven.
-            12/ The email should reference the technology that they already use (especially databases and streaming services) and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default. Yyou can use the Stack_search tool for this.
+            12/ The email should reference the technology that they already use (especially databases and streaming services) and how Aiven can provide superior time to value with an unified platform, unmatched cost control and compliance by default. You can use the Stack_search tool for this.
             13/ In the final output, You should include all reference data & links to back up your research
-            14/ Your output must be nicely formatted with headers for each section and bullet points. """
+            14/ Your output must be nicely formatted with headers for each section and bullet points. 
+            
+            This is the person and company you must research: {message}
+
+Here is the data we have on the target company and similar ones: {firmographic_data}"""
 )
 
 agent_kwargs = {
@@ -223,10 +264,24 @@ agent_kwargs = {
     "system_message": system_message,
 }
 
+
+# Set up LLM with temperature 0 for most predictable results
 llm = ChatOpenAI(temperature=0, model="gpt-3.5-turbo-16k-0613")
 memory = ConversationSummaryBufferMemory(
     memory_key="memory", return_messages=True, llm=llm, max_token_limit=1500)
 
+
+####### From RAG project, untested
+
+prompt = PromptTemplate(
+    input_variables=["message", "firmographic_data"],
+    template=system_message
+)
+
+
+chain = LLMChain(llm=llm, prompt=prompt)
+
+#################
 
 # Legacy (works!)
 agent = initialize_agent(
@@ -247,7 +302,16 @@ agent = initialize_agent(
 # )
 
 
-# This function extracts the paragraphs as sections.
+
+# Retrieval augmented generation
+def generate_response(message):
+    firmographic_data = retrieve_relevant_info_from_db(message)
+    response = chain.run(message=message, firmographic_data=firmographic_data)
+    return response
+
+
+
+# Extract the paragraphs as sections.
 def process_input(text):
     sections = text.split('#')  # Assume the paragraph uses double newlines to separate sections.
     return {
