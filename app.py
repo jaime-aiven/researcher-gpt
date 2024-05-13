@@ -271,17 +271,17 @@ memory = ConversationSummaryBufferMemory(
     memory_key="memory", return_messages=True, llm=llm, max_token_limit=1500)
 
 
-####### From RAG project, untested
+# ####### From RAG project, untested
 
-prompt = PromptTemplate(
-    input_variables=["message", "firmographic_data"],
-    template=system_message
-)
+# prompt = PromptTemplate(
+#     input_variables=["message", "firmographic_data"],
+#     template=system_message
+# )
 
 
-chain = LLMChain(llm=llm, prompt=prompt)
+# chain = LLMChain(llm=llm, prompt=prompt)
 
-#################
+# #################
 
 # Legacy (works!)
 agent = initialize_agent(
@@ -293,20 +293,22 @@ agent = initialize_agent(
     memory=memory,
 )
 
-# #New implm
-# agent = create_structured_chat_agent(
-#     tools,
-#     llm,
-#     agent_kwargs=agent_kwargs,
-#     memory=memory,
-# )
-
-
 
 # Retrieval augmented generation
 def generate_response(message):
+    
+    # Use the RAG retrieval to get contextually relevant company data
     firmographic_data = retrieve_relevant_info_from_db(message)
-    response = chain.run(message=message, firmographic_data=firmographic_data)
+
+    # Update the memory with the retrieved context
+    memory.update(firmographic_data)
+
+    # Configure agent to pass new prompt with retrieved context
+    agent.system_message.content += f"\n\nHere is the data we have on the target company and similar ones: {firmographic_data}"
+    
+
+    response = agent({"input": message, "memory": firmographic_data})
+    
     return response
 
 
@@ -404,7 +406,9 @@ def main():
         # time.sleep(1)  # Simulate delay for fetching data
         progress_bar.progress(20)
 
-        result = agent({"input": query})
+        # result = agent({"input": query})
+        result = generate_response({"input": query})
+
 
        
         sections = parse_llm_output(result['output'])
