@@ -8,9 +8,11 @@ from langchain_core.globals import set_verbose
 from langchain.agents import initialize_agent, Tool
 from langchain.agents import AgentType, create_structured_chat_agent
 # from langchain.chat_models import ChatOpenAI
+from langchain_community.document_loaders import CSVLoader
 from langchain.document_loaders.csv_loader import CSVLoader
 from langchain_community.vectorstores import FAISS
-from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
+# from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.chains import LLMChain
 from langchain_openai import ChatOpenAI
 from langchain.prompts import MessagesPlaceholder
@@ -41,6 +43,8 @@ wintr_api_key = os.getenv("WINTR_API_KEY")
 # Vectorize and store the Aiven 2000 csv data
 loader = CSVLoader(file_path="A2Kfirmographics.csv", encoding="utf8")
 documents = loader.load()
+if any(not isinstance(doc.page_content, str) for doc in documents):
+    raise ValueError("All document content must be strings")
 
 embeddings = OpenAIEmbeddings()
 db = FAISS.from_documents(documents, embeddings)
@@ -90,7 +94,7 @@ def stack_search(company_name):
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
-    print(remove_multiple_line_breaks(response.text))
+    # print(remove_multiple_line_breaks(response.text))
 
     return remove_multiple_line_breaks(response.text)
 
@@ -209,6 +213,13 @@ class ScrapeWebsiteTool(BaseTool):
 # Function for similarity search
 
 def retrieve_relevant_info_from_db(query):
+    try:
+        if not isinstance(query, str):
+            raise TypeError("Expected query to be a string")
+    except Exception as e:
+        print(f"Error processing query: {e}")
+        return None
+    
     similar_data = db.similarity_search(query, k=3)
 
     page_contents_array = [doc.page_content for doc in similar_data]
@@ -216,6 +227,8 @@ def retrieve_relevant_info_from_db(query):
     # For debug
     # print(page_contents_array)
 
+    print(f"Query type: {type(query)}, Query content: '{query}'")  # This should be a string
+    
     return page_contents_array
 
 
@@ -261,7 +274,9 @@ Here is the data we have on the target company and similar ones: {firmographic_d
 
 agent_kwargs = {
     "extra_prompt_messages": [MessagesPlaceholder(variable_name="memory")],
+    "extra_context": [MessagesPlaceholder(variable_name="firmographic_data")],
     "system_message": system_message,
+
 }
 
 
@@ -301,13 +316,14 @@ def generate_response(message):
     firmographic_data = retrieve_relevant_info_from_db(message)
 
     # Update the memory with the retrieved context
-    memory.update(firmographic_data)
+    # memory.update(firmographic_data)
+    # memory.save_context({"input": message},{"output":firmographic_data})
 
     # Configure agent to pass new prompt with retrieved context
-    agent.system_message.content += f"\n\nHere is the data we have on the target company and similar ones: {firmographic_data}"
+    # agent.system_message.content += f"\n\nHere is the data we have on the target company and similar ones: {firmographic_data}"
     
 
-    response = agent({"input": message, "memory": firmographic_data})
+    response = agent({"input": message, "memory":  firmographic_data})
     
     return response
 

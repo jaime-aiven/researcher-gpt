@@ -11,3 +11,4 @@ pyperclip
 clipboard
 langchain-openai
 langchain-community
+faiss-cpu
